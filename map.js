@@ -12,25 +12,76 @@ const map = new mapboxgl.Map({
 });
 
 map.on('load', () => { 
-    // Add bike lane data source
-    map.addSource('boston_route', {
-        type: 'geojson',
-        data: 'https://bostonopendata-boston.opendata.arcgis.com/datasets/boston::existing-bike-network-2022.geojson?...'
-    });
-
-    // Add a layer to visualize the bike lanes
-    map.addLayer({
-        id: 'bike-lanes',
-        type: 'line',
-        source: 'boston_route', // Match the source ID
-        layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
+    // Add bike lane data sources
+    const bikeRoutes = [
+        {
+            id: 'boston_route',
+            url: 'https://bostonopendata-boston.opendata.arcgis.com/datasets/boston::existing-bike-network-2022.geojson?...',
+            layerId: 'bike-lanes-boston'
         },
-        paint: {
-            'line-color': 'green', // Change color to blue for better visibility
-            'line-width': 3,
-            'line-opacity': 0.4
+        {
+            id: 'cambridge_route',
+            url: 'https://raw.githubusercontent.com/cambridgegis/cambridgegis_data/main/Recreation/Bike_Facilities/RECREATION_BikeFacilities.geojson',
+            layerId: 'bike-lanes-cambridge'
         }
+    ];
+
+    bikeRoutes.forEach(route => {
+        map.addSource(route.id, { type: 'geojson', data: route.url });
+        map.addLayer({
+            id: route.layerId,
+            type: 'line',
+            source: route.id,
+            layout: { 'line-join': 'round', 'line-cap': 'round' },
+            paint: {
+                'line-color': 'green',
+                'line-width': 3,
+                'line-opacity': 0.4
+            }
+        });
     });
 });
+
+// Load station data
+const jsonurl = 'https://dsc106.com/labs/lab07/data/bluebikes-stations.json';
+d3.json(jsonurl).then(jsonData => {
+    console.log('Loaded JSON Data:', jsonData);
+    const stations = jsonData.data.stations;
+    console.log('Stations Array:', stations);
+    updateStations(stations);
+}).catch(error => {
+    console.error('Error loading JSON:', error);
+});
+
+// Initialize SVG overlay
+const svg = d3.select('#map').append('svg');
+
+function getCoords(station) {
+    const point = new mapboxgl.LngLat(+station.lon, +station.lat);
+    const { x, y } = map.project(point);
+    return { cx: x, cy: y };
+}
+
+function updateStations(stations) {
+    const circles = svg.selectAll('circle')
+        .data(stations)
+        .enter()
+        .append('circle')
+        .attr('r', 5)
+        .attr('fill', 'steelblue')
+        .attr('stroke', 'white')
+        .attr('stroke-width', 1)
+        .attr('opacity', 0.8);
+
+    function updatePositions() {
+        circles
+            .attr('cx', d => getCoords(d).cx)
+            .attr('cy', d => getCoords(d).cy);
+    }
+
+    updatePositions();
+    map.on('move', updatePositions);
+    map.on('zoom', updatePositions);
+    map.on('resize', updatePositions);
+    map.on('moveend', updatePositions);
+}
