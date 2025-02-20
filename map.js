@@ -116,7 +116,15 @@ function updateStations(stations, radiusScale) {
         .attr('fill', 'steelblue')
         .attr('stroke', 'white')
         .attr('stroke-width', 1)
-        .attr('opacity', 0.8);
+        .attr('opacity', 0.8)
+
+        .each(function(d) {
+            // Add <title> for browser tooltips
+            d3.select(this)
+              .append('title')
+              .text(d => d.name)
+              .text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
+          });
   
     // Function to update circle positions based on the current map view
     function updatePositions() {
