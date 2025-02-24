@@ -27,9 +27,9 @@ time em {
   font-style: italic;
 }
 
-/* Shared custom properties for both map circles and legend swatches */
+/* Shared custom properties for map circles and legend items */
 #map circle,
-.legend > div {
+.legend-item {
   --color-departures: steelblue;
   --color-arrivals: darkorange;
   --color: color-mix(
@@ -46,16 +46,31 @@ time em {
 
 /* Legend container styling */
 .legend {
-  display: flex;              /* Align legend items horizontally */
-  gap: 1px;                   /* Small gap between items */
-  margin-block: 1rem;         /* Space above and below the legend */
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;           /* Larger gap between items */
+  margin-block: 1rem;   /* Space above and below the legend */
 }
 
-/* Legend swatch styling */
-.legend > div {
-  flex: 1;                    /* Each swatch takes equal space */
-  padding: 0.5rem 1rem;        /* More horizontal padding for even blocks */
-  background: var(--color);    /* Use the same computed color */
-  color: #fff;                /* Ensure good contrast */
+/* Legend label styling */
+.legend-label {
   font-weight: bold;
+}
+
+/* Legend item styling */
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;         /* Smaller gap between the dot and text */
+}
+
+/* Create the dot swatch using a ::before pseudo-element */
+.legend-item::before {
+  content: "";
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--color);
+  flex-shrink: 0;
 }
