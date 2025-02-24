@@ -8,3 +8,54 @@ body {
   margin: auto;
   padding: 1em;
 }
+header {
+  display: flex;
+  gap: 1em;
+  align-items: baseline;
+}
+/* Push the label to the right */
+label {
+  margin-left: auto;
+}
+/* Ensure the time element is on its own line */
+time {
+  display: block;
+}
+/* Style the em element for a lighter, italic appearance */
+time em {
+  color: lightgray;
+  font-style: italic;
+}
+
+/* Shared custom properties for both map circles and legend swatches */
+#map circle,
+.legend > div {
+  --color-departures: steelblue;
+  --color-arrivals: darkorange;
+  --color: color-mix(
+    in oklch,
+    var(--color-departures) calc(100% * var(--departure-ratio)),
+    var(--color-arrivals)
+  );
+}
+
+/* Map circle styling */
+#map circle {
+  fill: var(--color);
+}
+
+/* Legend container styling */
+.legend {
+  display: flex;              /* Align legend items horizontally */
+  gap: 1px;                   /* Small gap between items */
+  margin-block: 1rem;         /* Space above and below the legend */
+}
+
+/* Legend swatch styling */
+.legend > div {
+  flex: 1;                    /* Each swatch takes equal space */
+  padding: 0.5rem 1rem;        /* More horizontal padding for even blocks */
+  background: var(--color);    /* Use the same computed color */
+  color: #fff;                /* Ensure good contrast */
+  font-weight: bold;
+}
