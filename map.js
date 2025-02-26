@@ -54,6 +54,20 @@ function filterTripsbyTime(trips, timeFilter) {
     });
 }
 
+// Helper function to update tooltips for a given selection of circles
+function updateTooltips(selection) {
+  selection.each(function(d) {
+    let title = d3.select(this).select('title');
+    if (title.empty()) {
+      d3.select(this)
+        .append('title')
+        .text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
+    } else {
+      title.text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
+    }
+  });
+}
+
 // Initialize the map
 const map = new mapboxgl.Map({
   container: 'map', // ID of the div where the map will render
@@ -128,7 +142,7 @@ map.on('load', async () => {
     .domain([0, d3.max(stations, d => d.totalTraffic)])
     .range([0, 25]); // Default range when no filtering is applied
 
-  // Initialize SVG overlay for station markers
+  // Initialize SVG overlay for station markers (CSS now controls pointer events)
   const svg = d3.select('#map').append('svg');
 
   // Create a quantize scale for station flow:
@@ -151,17 +165,13 @@ map.on('load', async () => {
       .data(stations, (d) => d.short_name) // Use station short_name as the key
       .join('circle')
       .attr('r', d => radiusScale(d.totalTraffic))
-      // Instead of directly setting fill here, we assign the departure ratio as a CSS variable.
       .style("--departure-ratio", d => stationFlow(d.departures / d.totalTraffic))
       .attr('stroke', 'white')
       .attr('stroke-width', 1)
-      .attr('opacity', 0.8)
-      .each(function(d) {
-        // Add a <title> for browser tooltips
-        d3.select(this)
-          .append('title')
-          .text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
-      });
+      .attr('opacity', 0.8);
+
+    // Append or update tooltips on the circles
+    updateTooltips(circles);
 
     // Update circle positions based on the current map view
     function updatePositions() {
@@ -194,14 +204,16 @@ map.on('load', async () => {
     
     // Update the scatterplot by adjusting the radius and CSS variable of circles
     circles = circles
-      .data(filteredStations, (d) => d.short_name) // Ensure D3 tracks elements correctly
+      .data(filteredStations, (d) => d.short_name)
       .join('circle')
       .attr('r', d => radiusScale(d.totalTraffic))
-      // Update the departure ratio used for color
       .style("--departure-ratio", d => stationFlow(d.departures / d.totalTraffic))
       .attr('stroke', 'white')
       .attr('stroke-width', 1)
       .attr('opacity', 0.8);
+
+    // Update tooltips on the updated circles
+    updateTooltips(circles);
   }
 
   // Function to update the time display and filter data based on the slider's value
